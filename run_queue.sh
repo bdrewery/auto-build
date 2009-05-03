@@ -25,6 +25,14 @@ rebuild() {
 }
 
 critical_section() {
+	if ! [ -d "${BIN_PATH}" ]; then
+		mkdir -p ${BIN_PATH}
+	fi
+
+	if ! [ -d "${SRC_PATH}" ]; then
+		mkdir -p ${SRC_PATH}
+	fi
+
 	for ref in $(awk '{print $1}' ${AUTO_BUILD_DIR}/queue); do
 		QUEUE_TS=$(grep "^\<${ref}\>" ${AUTO_BUILD_DIR}/queue|awk '{print $2}')
 		if [ $((${current_ts} - ${QUEUE_TS})) -gt $((${QUEUE_MINUTES} * 60)) ]; then

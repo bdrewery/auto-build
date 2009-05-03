@@ -1,5 +1,6 @@
 #! /bin/bash
 
+export PATH=/bin:/usr/bin:/usr/sbin:/sbin:/usr/local/bin
 . /home/bryan/auto-build/auto-build.conf
 
 current_ts=$(date +%s)

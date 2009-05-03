@@ -42,6 +42,10 @@ critical_section() {
 			$SED -i -e "/^${ref}\ /d" ${AUTO_BUILD_DIR}/queue
 		fi
 	done
+
+	if [ -n "${POST_CMD}" ]; then
+		eval $POST_CMD
+	fi
 }
 
 lockfile=${AUTO_BUILD_DIR}/.lock

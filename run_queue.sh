@@ -34,16 +34,18 @@ critical_section() {
 		mkdir -p ${SRC_PATH}
 	fi
 
+	rebuilt=0
 	for ref in $(awk '{print $1}' ${AUTO_BUILD_DIR}/queue); do
 		QUEUE_TS=$(grep "^\<${ref}\> " ${AUTO_BUILD_DIR}/queue|awk '{print $2}')
 		if [ $((${current_ts} - ${QUEUE_TS})) -gt $((${QUEUE_MINUTES} * 60)) ]; then
+			rebuilt=1
 			rebuild $ref
 			### Remove tag from queue
 			$SED -i -e "/^${ref}\ /d" ${AUTO_BUILD_DIR}/queue
 		fi
 	done
 
-	if [ -n "${POST_CMD}" ]; then
+	if [ -n "${POST_CMD}" -a $rebuilt -eq 1 ]; then
 		eval $POST_CMD
 	fi
 }

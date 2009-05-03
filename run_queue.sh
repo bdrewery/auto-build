@@ -16,7 +16,7 @@ rebuild() {
 	tar -czvf ${PKG_NAME}.$(uname -s)-${tag}.tar.gz ${PKG_NAME} && \
 	mv ${PKG_NAME}.$(uname -s)-${tag}.tar.gz ${BIN_PATH}/
 	# scp
-	if [ -f Makefile ]; then
+	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
 		$MAKE distrib && \
 		tar -czvf ${PKG_NAME}-$(${GIT} describe).tar.gz ${PKG_NAME}-$(${GIT} describe) && \
 		mv ${PKG_NAME}-$(${GIT} describe).tar.gz ${SRC_PATH}/

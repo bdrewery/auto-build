@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# This hook does two things:
+#
+#  1. update the "info" files that allow the list of references to be
+#     queries over dumb transports such as http
+#
+#  2. if this repository looks like it is a non-bare repository, and
+#     the checked-out branch is pushed to, then update the working copy.
+#     This makes "push" function somewhat similarly to darcs and bzr.
+#
+# To enable this hook, make this file executable by "chmod +x post-update".
+
+. /home/bryan/auto-build/auto-build.conf
+
+git update-server-info
+
+for ref; do
+	tag=${ref#refs/tags/}
+	grep "\<${tag}\>" ${AUTO_BUILD_DIR}/queue > /dev/null 2>&1
+	if [ $? -eq 1 ]; then
+		### Tag not found, add it to the queue
+		echo "${tag} $(date +%s)" >> ${AUTO_BUILD_DIR}/queue
+		echo "Queued $tag for rebuild"
+	else
+		### Tag updated and it's already queued? Update the TS.
+		$SED -i -e "s:^${tag} .*:${tag} $(date +%s):" ${AUTO_BUILD_DIR}/queue
+		echo "Updated rebuild queue for $tag"
+	fi
+done

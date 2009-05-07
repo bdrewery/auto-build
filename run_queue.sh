@@ -6,20 +6,21 @@ export PATH=/bin:/usr/bin:/usr/sbin:/sbin:/usr/local/bin
 current_ts=$(date +%s)
 
 rebuild() {
-	tag=$1
+	ref=$1
 	cd $GIT_WORK_TREE
 	${GIT} clean -fdx
-	${GIT} checkout -f $tag
+	${GIT} checkout -f $ref
+	TAG=$(${GIT} describe $ref)
 	./configure && \
 	cd $GIT_WORK_TREE && \
 	$MAKE && \
-	tar -czvf ${PKG_NAME}.$(uname -s)-${tag}.tar.gz ${PKG_NAME} && \
-	mv ${PKG_NAME}.$(uname -s)-${tag}.tar.gz ${BIN_PATH}/
+	tar -czvf ${PKG_NAME}.$(uname -s)-${TAG}.tar.gz ${PKG_NAME} && \
+	mv ${PKG_NAME}.$(uname -s)-${TAG}.tar.gz ${BIN_PATH}/
 	# scp
 	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
 		$MAKE distrib && \
-		tar -czvf ${PKG_NAME}-$(${GIT} describe).tar.gz ${PKG_NAME}-$(${GIT} describe) && \
-		mv ${PKG_NAME}-$(${GIT} describe).tar.gz ${SRC_PATH}/
+		tar -czvf ${PKG_NAME}-${TAG}.tar.gz ${PKG_NAME}-${TAG} && \
+		mv ${PKG_NAME}-${TAG}.tar.gz ${SRC_PATH}/
 		# scp
 	fi
 	${GIT} clean -fdx
@@ -40,7 +41,7 @@ critical_section() {
 		if [ $((${current_ts} - ${QUEUE_TS})) -gt $((${QUEUE_MINUTES} * 60)) ]; then
 			rebuilt=1
 			rebuild $ref
-			### Remove tag from queue
+			### Remove ref from queue
 			$SED -i -e "/^${ref}\ /d" ${AUTO_BUILD_DIR}/queue
 		fi
 	done

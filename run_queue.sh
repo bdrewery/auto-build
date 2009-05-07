@@ -29,6 +29,7 @@ rebuild() {
 	./configure && \
 	cd $GIT_WORK_TREE && \
 	$MAKE && \
+        mv ${PKG_NAME} ${PKG_NAME}.${UNAME}-${TAG} && \
 	tar -czvf ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${PKG_NAME}.${UNAME}-${TAG} && \
 	mv ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/
 	# scp

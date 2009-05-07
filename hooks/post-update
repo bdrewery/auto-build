@@ -11,6 +11,7 @@
 #
 # To enable this hook, make this file executable by "chmod +x post-update".
 
+export PATH=/bin:/usr/bin:/usr/sbin:/sbin:/usr/local/bin
 . /home/bryan/auto-build/auto-build.conf
 
 git update-server-info
@@ -19,6 +20,12 @@ for ref; do
 	### Was this deleted?
 	git show-ref $ref > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
+		### Remove from queue if it exists
+
+		$SED -i -e "/^${ref##*/}\ /d" ${AUTO_BUILD_DIR}/queue
+		if [ $? -eq 0 ]; then
+			echo "Dequeued ${ref##*/} for rebuild"
+		fi
 		continue
 	fi
 	short_ref=${ref#refs/tags/}

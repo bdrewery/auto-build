@@ -11,16 +11,33 @@ rebuild() {
 	${GIT} clean -fdx
 	${GIT} checkout -f $ref
 	TAG=$(${GIT} describe $ref)
+	### Is this a tag or a branch?
+	${GIT} describe --exact-match $ref > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		my_BIN_PATH=${BIN_PATH}/tags
+		my_SRC_PATH=${SRC_PATH}/tags
+	else
+		my_BIN_PATH=${BIN_PATH}/${ref}
+		my_SRC_PATH=${SRC_PATH}/${ref}
+	fi
+
+	if ! [ -d "${my_BIN_PATH}" ]; then
+		mkdir -p ${my_BIN_PATH} > /dev/null 2>&1
+	fi
+
 	./configure && \
 	cd $GIT_WORK_TREE && \
 	$MAKE && \
 	tar -czvf ${PKG_NAME}.$(uname -s)-${TAG}.tar.gz ${PKG_NAME} && \
-	mv ${PKG_NAME}.$(uname -s)-${TAG}.tar.gz ${BIN_PATH}/
+	mv ${PKG_NAME}.$(uname -s)-${TAG}.tar.gz ${my_BIN_PATH}/
 	# scp
 	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
+		if ! [ -d "${my_SRC_PATH}" ]; then
+			mkdir -p ${my_SRC_PATH} > /dev/null 2>&1
+		fi
 		$MAKE distrib && \
 		tar -czvf ${PKG_NAME}-${TAG}.tar.gz ${PKG_NAME}-${TAG} && \
-		mv ${PKG_NAME}-${TAG}.tar.gz ${SRC_PATH}/
+		mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/
 		# scp
 	fi
 	${GIT} clean -fdx

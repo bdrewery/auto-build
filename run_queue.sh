@@ -11,6 +11,7 @@ rebuild() {
 	${GIT} clean -fdx
 	${GIT} checkout -f $ref
 	TAG=$(${GIT} describe $ref)
+        UNAME=$(uname -s)
 	### Is this a tag or a branch?
 	${GIT} describe --exact-match $ref > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
@@ -28,8 +29,8 @@ rebuild() {
 	./configure && \
 	cd $GIT_WORK_TREE && \
 	$MAKE && \
-	tar -czvf ${PKG_NAME}.$(uname -s)-${TAG}.tar.gz ${PKG_NAME} && \
-	mv ${PKG_NAME}.$(uname -s)-${TAG}.tar.gz ${my_BIN_PATH}/
+	tar -czvf ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${PKG_NAME}.${UNAME}-${TAG} && \
+	mv ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/
 	# scp
 	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
 		if ! [ -d "${my_SRC_PATH}" ]; then

@@ -16,6 +16,11 @@
 git update-server-info
 
 for ref; do
+	### Was this deleted?
+	git show-ref $ref > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		continue
+	fi
 	short_ref=${ref#refs/tags/}
 
 	### Not a tag

@@ -31,7 +31,8 @@ rebuild() {
 	$MAKE && \
         mv ${PKG_NAME} ${PKG_NAME}.${UNAME}-${TAG} && \
 	tar -czvf ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${PKG_NAME}.${UNAME}-${TAG} && \
-	mv ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/
+	mv ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/ && \
+        ln -fs ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.tar.gz
 	# scp
 	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
 		if ! [ -d "${my_SRC_PATH}" ]; then

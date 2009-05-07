@@ -16,15 +16,25 @@
 git update-server-info
 
 for ref; do
-	tag=${ref#refs/tags/}
-	grep "\<${tag}\>" ${AUTO_BUILD_DIR}/queue > /dev/null 2>&1
+	short_ref=${ref#refs/tags/}
+
+	### Not a tag
+	if [ "${short_ref}" = "${ref}" ]; then
+		short_ref=${ref#refs/heads/}
+
+		# Only rebuild next/master
+		if ! [ "${short_ref}" = "master" -o "${short_ref}" = "next" ]; then
+			continue
+		fi
+	fi
+	grep "\<${short_ref}\>" ${AUTO_BUILD_DIR}/queue > /dev/null 2>&1
 	if [ $? -eq 1 ]; then
-		### Tag not found, add it to the queue
-		echo "${tag} $(date +%s)" >> ${AUTO_BUILD_DIR}/queue
-		echo "Queued $tag for rebuild"
+		### Ref not found, add it to the queue
+		echo "${short_ref} $(date +%s)" >> ${AUTO_BUILD_DIR}/queue
+		echo "Queued $short_ref for rebuild"
 	else
-		### Tag updated and it's already queued? Update the TS.
-		$SED -i -e "s:^${tag} .*:${tag} $(date +%s):" ${AUTO_BUILD_DIR}/queue
-		echo "Updated rebuild queue for $tag"
+		### Ref updated and it's already queued? Update the TS.
+		$SED -i -e "s:^${short_ref} .*:${short_ref} $(date +%s):" ${AUTO_BUILD_DIR}/queue
+		echo "Updated rebuild queue for $short_ref"
 	fi
 done

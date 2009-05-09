@@ -40,7 +40,8 @@ rebuild() {
 		fi
 		$MAKE distrib && \
 		tar -czvf ${PKG_NAME}-${TAG}.tar.gz ${PKG_NAME}-${TAG} && \
-		mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/
+		mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/ && \
+                ln -fs ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/${PKG_NAME}-latest.tar.gz
 		# scp
 	fi
 	${GIT} clean -fdx

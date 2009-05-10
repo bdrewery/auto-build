@@ -32,6 +32,8 @@ rebuild() {
         mv ${PKG_NAME} ${PKG_NAME}.${UNAME}-${TAG} && \
 	tar -czvf ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${PKG_NAME}.${UNAME}-${TAG} && \
 	mv ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/ && \
+        # Only symlink full releases \
+        ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && \
         ln -fs ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.tar.gz
 	# scp
 	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
@@ -41,6 +43,8 @@ rebuild() {
 		$MAKE distrib && \
 		tar -czvf ${PKG_NAME}-${TAG}.tar.gz ${PKG_NAME}-${TAG} && \
 		mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/ && \
+                # Only symlink full releases \
+                ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && \
                 ln -fs ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/${PKG_NAME}-latest.tar.gz
 		# scp
 	fi

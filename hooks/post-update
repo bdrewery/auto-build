@@ -39,7 +39,7 @@ for ref; do
 			continue
 		fi
 	fi
-	grep "\<${short_ref}\>" ${AUTO_BUILD_DIR}/queue > /dev/null 2>&1
+	grep "^${short_ref} " ${AUTO_BUILD_DIR}/queue > /dev/null 2>&1
 	if [ $? -eq 1 ]; then
 		### Ref not found, add it to the queue
 		echo "${short_ref} $(date +%s)" >> ${AUTO_BUILD_DIR}/queue

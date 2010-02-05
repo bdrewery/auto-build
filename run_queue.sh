@@ -35,6 +35,7 @@ rebuild() {
         # Only symlink full releases \
         ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && \
         ln -fs ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.tar.gz
+        echo ${PKG_NAME}.${UNAME}-${TAG}.tar.gz > ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.txt
 	# scp
 	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
 		if ! [ -d "${my_SRC_PATH}" ]; then
@@ -45,7 +46,8 @@ rebuild() {
 		mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/ && \
                 # Only symlink full releases \
                 ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && \
-                ln -fs ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/${PKG_NAME}-latest.tar.gz
+                ln -fs ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/${PKG_NAME}-latest.tar.gz && \
+                echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-latest.txt
 		# scp
 	fi
 	${GIT} clean -fdx
@@ -70,9 +72,16 @@ critical_section() {
 			$SED -i -e "/^${ref}\ /d" ${AUTO_BUILD_DIR}/queue
 		fi
 	done
-
-	if [ -n "${POST_CMD}" -a $rebuilt -eq 1 ]; then
-		eval $POST_CMD
+rebuilt=1
+	if [ $rebuilt -eq 1 ]; then
+          if [ $DO_SRC -eq 1 ]; then
+#            echo rsync -avHc -e "ssh -i $SSH_KEY" ${SRC_PATH}/ ${SITE_MAIN}/src/
+            rsync -avHc --del --exclude '*latest.txt' -e "ssh -i $SSH_KEY" ${SRC_PATH}/ ${SITE_MIRROR}/src/
+          fi
+#          echo rsync -avHc --del -e "ssh -i $SSH_KEY" ${BIN_PATH}/ ${SITE_MAIN}/bins/$(uname -s)/
+#          echo rsync -avHc -e "ssh -i $SSH_KEY" ${FILE_PATH}/ ${SITE_MAIN}/
+          rsync -avHc --exclude '*.tar.gz' --include '*latest*' -e "ssh -i $SSH_KEY" ${FILE_PATH}/ ${SITE_MAIN}/
+          rsync -avHc --del --exclude '*latest.txt' -e "ssh -i $SSH_KEY" ${BIN_PATH}/ ${SITE_MIRROR}/bins/$(uname -s)/
 	fi
 }
 

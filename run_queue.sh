@@ -72,7 +72,7 @@ critical_section() {
 			$SED -i -e "/^${ref}\ /d" ${AUTO_BUILD_DIR}/queue
 		fi
 	done
-rebuilt=1
+
 	if [ $rebuilt -eq 1 ]; then
           if [ $DO_SRC -eq 1 ]; then
 #            echo rsync -avHc -e "ssh -i $SSH_KEY" ${SRC_PATH}/ ${SITE_MAIN}/src/

@@ -81,7 +81,15 @@ critical_section() {
 #          echo rsync -avHc --del -e "ssh -i $SSH_KEY" ${BIN_PATH}/ ${SITE_MAIN}/bins/$(uname -s)/
 #          echo rsync -avHc -e "ssh -i $SSH_KEY" ${FILE_PATH}/ ${SITE_MAIN}/
           rsync -avHc --exclude '*.tar.gz' --include '*latest*' -e "ssh -i $SSH_KEY" ${FILE_PATH}/ ${SITE_MAIN}/
-          rsync -avHc --del --exclude '*latest.txt' -e "ssh -i $SSH_KEY" ${BIN_PATH}/ ${SITE_MIRROR}/bins/$(uname -s)/
+          redo=1
+          while [ $redo -eq 1 ]; do
+            rsync -avHc --del --exclude '*latest.txt' -e "ssh -i $SSH_KEY" ${BIN_PATH}/ ${SITE_MIRROR}/bins/$(uname -s)/
+            if [ $? -eq 0 ]; then
+              redo=0
+            else
+              sleep 20
+            fi
+          done
 	fi
 }
 

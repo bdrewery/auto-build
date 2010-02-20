@@ -46,7 +46,8 @@ rebuild() {
 		mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/ && \
                 # Only symlink full releases \
                 ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && \
-                echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-latest.txt
+                echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-latest.txt && \
+                echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-${TAG}.txt
                 #ln -fs ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/${PKG_NAME}-latest.tar.gz && \
 		# scp
 	fi
@@ -89,14 +90,14 @@ critical_section() {
           if [ $DO_SRC -eq 1 ]; then
 #            echo rsync -avHc -e "ssh -i $SSH_KEY" ${SRC_PATH}/ ${SITE_MAIN}/src/
             echo "Rsyncing Source to mirror"
-            sync "rsync -avHc --del --exclude '*latest.txt' -e 'ssh -i $SSH_KEY' ${SRC_PATH}/ ${SITE_MIRROR}/src/"
+            sync "rsync -avHc --del --exclude '*.txt' -e 'ssh -i $SSH_KEY' ${SRC_PATH}/ ${SITE_MIRROR}/src/"
           fi
 #          echo rsync -avHc --del -e "ssh -i $SSH_KEY" ${BIN_PATH}/ ${SITE_MAIN}/bins/$(uname -s)/
 #          echo rsync -avHc -e "ssh -i $SSH_KEY" ${FILE_PATH}/ ${SITE_MAIN}/
           echo "Rsyncing Binary metadata to main site"
-          sync "rsync -avHc --exclude '*.tar.gz' --include '*latest*' -e 'ssh -i $SSH_KEY' ${FILE_PATH}/ ${SITE_MAIN}/"
+          sync "rsync -avHc --exclude '*.tar.gz' --include '*.txt' -e 'ssh -i $SSH_KEY' ${FILE_PATH}/ ${SITE_MAIN}/"
           echo "Rsyncing Binaries to mirror"
-          sync "rsync -avHc --del --exclude '*latest.txt' -e 'ssh -i $SSH_KEY' ${BIN_PATH}/ ${SITE_MIRROR}/bins/$(uname -s)/"
+          sync "rsync -avHc --del --exclude '*.txt' -e 'ssh -i $SSH_KEY' ${BIN_PATH}/ ${SITE_MIRROR}/bins/$(uname -s)/"
 	fi
 }
 

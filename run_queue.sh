@@ -12,8 +12,7 @@ compile() {
   return $?
 }
 
-process_bin() {
-  echo "PROCESS_BIN $1 $2 $3"
+process_ref() {
   my_BIN_PATH=$1
   my_SRC_PATH=$2
   symlink=$3
@@ -28,6 +27,25 @@ process_bin() {
   # Only symlink full releases \
   [ $symlink -eq 1 ] && \
   echo ${PKG_NAME}.${UNAME}-${TAG}.tar.gz > ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.txt
+
+  ### Do source
+
+  #ln -fs ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.tar.gz
+  # scp
+  if [ -f Makefile -a "$DO_SRC" = "1" ]; then
+    if ! [ -d "${my_SRC_PATH}" ]; then
+      mkdir -p ${my_SRC_PATH} > /dev/null 2>&1
+    fi
+    $MAKE distrib && \
+    tar -czvf ${PKG_NAME}-${TAG}.tar.gz ${PKG_NAME}-${TAG} && \
+    mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/ && \
+    # Only symlink full releases \
+    [ $symlink -eq 1 ] && \
+    echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-latest.txt && \
+    echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-${TAG}.txt
+    #ln -fs ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/${PKG_NAME}-latest.tar.gz && \
+    # scp
+  fi
 }
 
 rebuild() {
@@ -54,32 +72,16 @@ rebuild() {
         if [ $? -eq 0 ]; then
           if [ $ref_is_tag -eq 0 ]; then
             ### Process branch
-            process_bin ${BIN_PATH}/${ref} ${SRC_PATH}/${ref} 1
+            process_ref ${BIN_PATH}/${ref} ${SRC_PATH}/${ref} 1
           fi
 
           ### Is this a tag?
           if [ $is_tagged -eq 1 ]; then
             ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && symlink=1 || symlink=0
-            process_bin ${BIN_PATH}/tags ${SRC_PATH}/tags $symlink
+            process_ref ${BIN_PATH}/tags ${SRC_PATH}/tags $symlink
           fi
         fi
 
-        #ln -fs ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.tar.gz
-	# scp
-	if [ -f Makefile -a "$DO_SRC" = "1" ]; then
-		if ! [ -d "${my_SRC_PATH}" ]; then
-			mkdir -p ${my_SRC_PATH} > /dev/null 2>&1
-		fi
-		$MAKE distrib && \
-		tar -czvf ${PKG_NAME}-${TAG}.tar.gz ${PKG_NAME}-${TAG} && \
-		mv ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/ && \
-                # Only symlink full releases \
-                ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && \
-                echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-latest.txt && \
-                echo ${PKG_NAME}-${TAG}.tar.gz > ${my_SRC_PATH}/${PKG_NAME}-${TAG}.txt
-                #ln -fs ${PKG_NAME}-${TAG}.tar.gz ${my_SRC_PATH}/${PKG_NAME}-latest.tar.gz && \
-		# scp
-	fi
 	${GIT} clean -fdx
 }
 

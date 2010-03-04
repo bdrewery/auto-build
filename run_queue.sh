@@ -5,6 +5,31 @@ export PATH=/bin:/usr/bin:/usr/sbin:/sbin:/usr/local/bin
 
 current_ts=$(date +%s)
 
+compile() {
+  ./configure && \
+  cd $GIT_WORK_TREE && \
+  $MAKE
+  return $?
+}
+
+process_bin() {
+  echo "PROCESS_BIN $1 $2 $3"
+  my_BIN_PATH=$1
+  my_SRC_PATH=$2
+  symlink=$3
+
+  if ! [ -d "${my_BIN_PATH}" ]; then
+    mkdir -p ${my_BIN_PATH} > /dev/null 2>&1
+  fi
+
+  cp ${PKG_NAME} ${PKG_NAME}.${UNAME}-${TAG} && \
+  tar -czvf ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${PKG_NAME}.${UNAME}-${TAG} && \
+  mv ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/ && \
+  # Only symlink full releases \
+  [ $symlink -eq 1 ] && \
+  echo ${PKG_NAME}.${UNAME}-${TAG}.tar.gz > ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.txt
+}
+
 rebuild() {
 	ref=$1
 	cd $GIT_WORK_TREE
@@ -12,29 +37,33 @@ rebuild() {
 	${GIT} checkout -f $ref
 	TAG=$(${GIT} describe $ref)
         UNAME=$(uname -s)
-	### Is this a tag or a branch?
-	${GIT} describe --exact-match $ref > /dev/null 2>&1
-	if [ $? -eq 0 ]; then
-		my_BIN_PATH=${BIN_PATH}/tags
-		my_SRC_PATH=${SRC_PATH}/tags
-	else
-		my_BIN_PATH=${BIN_PATH}/${ref}
-		my_SRC_PATH=${SRC_PATH}/${ref}
-	fi
 
-	if ! [ -d "${my_BIN_PATH}" ]; then
-		mkdir -p ${my_BIN_PATH} > /dev/null 2>&1
-	fi
+        is_tagged=0
+        ### Is this a tag?
+        ${GIT} describe --exact-match $ref > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+          is_tagged=1
+        fi
 
-	./configure && \
-	cd $GIT_WORK_TREE && \
-	$MAKE && \
-        mv ${PKG_NAME} ${PKG_NAME}.${UNAME}-${TAG} && \
-	tar -czvf ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${PKG_NAME}.${UNAME}-${TAG} && \
-	mv ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/ && \
-        # Only symlink full releases \
-        ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && \
-        echo ${PKG_NAME}.${UNAME}-${TAG}.tar.gz > ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.txt
+        ref_is_tag=0
+        if [ "$ref" = "$TAG" ]; then
+          ref_is_tag=1
+        fi
+
+        compile
+        if [ $? -eq 0 ]; then
+          if [ $ref_is_tag -eq 0 ]; then
+            ### Process branch
+            process_bin ${BIN_PATH}/${ref} ${SRC_PATH}/${ref} 1
+          fi
+
+          ### Is this a tag?
+          if [ $is_tagged -eq 1 ]; then
+            ! (echo "$TAG"|grep -q -- "-rc[0-9]*\$") && symlink=1 || symlink=0
+            process_bin ${BIN_PATH}/tags ${SRC_PATH}/tags $symlink
+          fi
+        fi
+
         #ln -fs ${PKG_NAME}.${UNAME}-${TAG}.tar.gz ${my_BIN_PATH}/${PKG_NAME}.${UNAME}-latest.tar.gz
 	# scp
 	if [ -f Makefile -a "$DO_SRC" = "1" ]; then

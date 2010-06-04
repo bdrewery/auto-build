@@ -35,7 +35,7 @@ for ref; do
 		short_ref=${ref#refs/heads/}
 
 		# Only rebuild next/master
-		if ! [ "${short_ref}" = "master" -o "${short_ref}" = "next" ]; then
+		if ! [ "${short_ref}" = "master" -o "${short_ref}" = "next" -o "${short_ref}" = "maint" ]; then
 			continue
 		fi
 	fi

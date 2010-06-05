@@ -6,7 +6,7 @@ export PATH=/bin:/usr/bin:/usr/sbin:/sbin:/usr/local/bin
 current_ts=$(date +%s)
 
 compile() {
-  ./configure && \
+  MAKEJOBS="-j4" ./configure && \
   cd $GIT_WORK_TREE && \
   $MAKE
   return $?

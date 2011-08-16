@@ -8,6 +8,10 @@ if ! [ -L ${GIT_DIR}/hooks/post-update ]; then
 	ln -s ${AUTO_BUILD_DIR}/hooks/post-update ${GIT_DIR}/hooks/post-update
 fi
 
+pushd ${GIT_WORK_TREE}
+${GIT} config receive.denyCurrentBranch ignore
+popd
+
 ### Auto install the crontab too
 TMPFILE=`mktemp /tmp/auto-build.XXXXXX` || exit 1
 cat > $TMPFILE << EOF

@@ -51,7 +51,7 @@ process_ref() {
 rebuild() {
 	ref=$1
 	cd $GIT_WORK_TREE
-	${GIT} clean -fdx
+	${GIT} clean -ffdx
 	${GIT} checkout -f $ref
 	TAG=$(${GIT} describe $ref)
         UNAME=$(uname -s)

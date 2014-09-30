@@ -82,7 +82,7 @@ rebuild() {
           fi
         fi
 
-	${GIT} clean -fdx
+	${GIT} clean -ffdx
 }
 
 sync() {

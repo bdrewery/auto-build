@@ -53,7 +53,7 @@ rebuild() {
 	cd $GIT_WORK_TREE
 	${GIT} clean -ffdx
 	${GIT} checkout -f $ref
-	TAG=$(${GIT} describe $ref)
+	TAG=$(${GIT} describe --candidates=2 $ref)
         UNAME=$(uname -s)
 
         is_tagged=0
